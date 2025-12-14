@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Product Usage Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            padding: 24px 32px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .header p {
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #334155;
+        }
+
+        .summary-card .label {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-top: 8px;
+        }
+
+        .summary-card .subtext {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .summary-card.highlight {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            border: none;
+        }
+
+        .summary-card.highlight .label,
+        .summary-card.highlight .subtext {
+            color: #bfdbfe;
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Products Table */
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #334155;
+        }
+
+        th {
+            background: #0f172a;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        tr:hover {
+            background: #334155;
+            cursor: pointer;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: #f8fafc;
+        }
+
+        .product-owner {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Score Badges */
+        .score {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .score.high {
+            background: #065f46;
+            color: #6ee7b7;
+        }
+
+        .score.medium {
+            background: #854d0e;
+            color: #fde047;
+        }
+
+        .score.low {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        /* Trend Indicators */
+        .trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+
+        .trend.growing {
+            color: #4ade80;
+        }
+
+        .trend.stable {
+            color: #94a3b8;
+        }
+
+        .trend.declining {
+            color: #f87171;
+        }
+
+        /* Metrics */
+        .metrics {
+            display: flex;
+            gap: 16px;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f8fafc;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Charts */
+        .chart-container {
+            padding: 16px;
+            height: 250px;
+        }
+
+        /* AI Insights */
+        .insights-container {
+            padding: 16px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .insights-content {
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .insights-loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+        }
+
+        .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #334155;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        /* Detail Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1e293b;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #334155;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .detail-card {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .detail-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .detail-card .label {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .chart-card h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #94a3b8;
+        }
+
+        .chart-card canvas {
+            max-height: 200px;
+        }
+
+        /* Retention Table */
+        .retention-table {
+            width: 100%;
+            font-size: 13px;
+        }
+
+        .retention-table th,
+        .retention-table td {
+            padding: 8px 12px;
+            text-align: center;
+        }
+
+        .retention-cell {
+            border-radius: 4px;
+        }
+
+        .tables-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .table-tag {
+            background: #334155;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+        }
+
+        .table-tag .count {
+            color: #3b82f6;
+            margin-left: 4px;
+        }
+
+        /* Chat Icon and Panel */
+        .chat-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 1000;
+        }
+
+        .chat-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+        }
+
+        .chat-fab svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        .chat-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 400px;
+            height: 500px;
+            background: #1e293b;
+            border-radius: 16px;
+            border: 1px solid #334155;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+            overflow: hidden;
+        }
+
+        .chat-panel.active {
+            display: flex;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-header h3 svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .chat-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .chat-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            background: #3b82f6;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-message.assistant {
+            align-self: flex-start;
+            background: #334155;
+            color: #e2e8f0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-message.assistant.streaming {
+            background: #334155;
+        }
+
+        .chat-welcome {
+            text-align: center;
+            color: #94a3b8;
+            padding: 20px;
+        }
+
+        .chat-welcome svg {
+            width: 48px;
+            height: 48px;
+            fill: #3b82f6;
+            margin-bottom: 12px;
+        }
+
+        .chat-welcome h4 {
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+
+        .chat-welcome p {
+            font-size: 13px;
+        }
+
+        .chat-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            justify-content: center;
+        }
+
+        .chat-suggestion {
+            background: #334155;
+            border: 1px solid #475569;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: #e2e8f0;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .chat-suggestion:hover {
+            background: #475569;
+            border-color: #3b82f6;
+        }
+
+        .chat-input-container {
+            padding: 16px;
+            border-top: 1px solid #334155;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 24px;
+            padding: 12px 16px;
+            color: #f8fafc;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: #3b82f6;
+        }
+
+        .chat-input::placeholder {
+            color: #64748b;
+        }
+
+        .chat-send {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .chat-send:hover {
+            background: #2563eb;
+        }
+
+        .chat-send:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        .chat-send svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        @media (max-width: 480px) {
+            .chat-panel {
+                width: calc(100% - 48px);
+                height: calc(100% - 150px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Data Product Usage Analytics</h1>
+        <p>Track adoption, stickiness, and health of your internal data products</p>
+    </div>
+
+    <div class="container">
+        <!-- Summary Cards -->
+        <div class="summary-grid" id="summaryCards">
+            <div class="summary-card highlight">
+                <div class="label">Active Users (30d)</div>
+                <div class="value" id="activeUsers">-</div>
+                <div class="subtext">Unique users this month</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Data Products</div>
+                <div class="value" id="totalProducts">-</div>
+                <div class="subtext">Being tracked</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Total Queries (30d)</div>
+                <div class="value" id="totalQueries">-</div>
+                <div class="subtext" id="queriesToday">- today</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Avg Adoption Score</div>
+                <div class="value" id="avgAdoption">-</div>
+                <div class="subtext">Across all products</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">Avg Stickiness</div>
+                <div class="value" id="avgStickiness">-</div>
+                <div class="subtext">DAU/MAU ratio</div>
+            </div>
+            <div class="summary-card">
+                <div class="label">At Risk</div>
+                <div class="value" id="atRisk">-</div>
+                <div class="subtext">Products declining</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <!-- Products Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Data Products</h2>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>DAU / WAU / MAU</th>
+                                <th>Adoption</th>
+                                <th>Stickiness</th>
+                                <th>Risk</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTable">
+                            <tr><td colspan="6" style="text-align: center; color: #64748b;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Usage Chart -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Query Trends (30 days)</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="usageChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- AI Insights -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>AI Insights</h2>
+                        <button class="btn" id="getInsightsBtn" onclick="getInsights()">Generate Insights</button>
+                    </div>
+                    <div class="insights-container">
+                        <div class="insights-content" id="insightsContent">
+                            Click "Generate Insights" to get AI-powered recommendations based on your data product usage patterns.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat FAB Button -->
+    <button class="chat-fab" id="chatFab" onclick="toggleChat()">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+            <path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/>
+        </svg>
+    </button>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel" id="chatPanel">
+        <div class="chat-header">
+            <h3>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                AI Insights
+            </h3>
+            <button class="chat-close" onclick="toggleChat()">&times;</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-welcome">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                <h4>Ask about your Data Products</h4>
+                <p>Get insights about adoption, usage trends, and recommendations</p>
+                <div class="chat-suggestions">
+                    <button class="chat-suggestion" onclick="askSuggestion('Which product has the highest adoption?')">Highest adoption?</button>
+                    <button class="chat-suggestion" onclick="askSuggestion('Which products are at risk?')">Products at risk?</button>
+                    <button class="chat-suggestion" onclick="askSuggestion('How can I improve stickiness?')">Improve stickiness?</button>
+                </div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Ask about your data products..." onkeypress="handleChatKeypress(event)">
+            <button class="chat-send" id="chatSend" onclick="sendChatMessage()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2 id="modalTitle">Product Details</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let usageChart = null;
+        let allProducts = [];
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSummary();
+            loadProducts();
+        });
+
+        async function loadSummary() {
+            try {
+                const response = await fetch('/api/summary');
+                const data = await response.json();
+
+                document.getElementById('activeUsers').textContent = data.active_users_30d;
+                document.getElementById('totalProducts').textContent = data.total_products;
+                document.getElementById('totalQueries').textContent = formatNumber(data.total_queries_30d);
+                document.getElementById('queriesToday').textContent = `${data.queries_today} today`;
+                document.getElementById('avgAdoption').textContent = data.avg_adoption_score + '%';
+                document.getElementById('avgStickiness').textContent = data.avg_stickiness_score + '%';
+                document.getElementById('atRisk').textContent = data.products_at_risk;
+            } catch (error) {
+                console.error('Error loading summary:', error);
+            }
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                allProducts = await response.json();
+                renderProducts(allProducts);
+                renderUsageChart(allProducts);
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        function renderProducts(products) {
+            const tbody = document.getElementById('productsTable');
+            tbody.innerHTML = products.map(p => `
+                <tr onclick="showProductDetail(${p.id})">
+                    <td>
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-owner">${p.owner || 'Unknown'}</div>
+                    </td>
+                    <td>
+                        <div class="metrics">
+                            <div class="metric">
+                                <div class="metric-value">${p.dau}</div>
+                                <div class="metric-label">DAU</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">${p.wau}</div>
+                                <div class="metric-label">WAU</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value">${p.mau}</div>
+                                <div class="metric-label">MAU</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="score ${getScoreClass(p.adoption_score)}">${p.adoption_score}%</span></td>
+                    <td><span class="score ${getScoreClass(p.stickiness_score)}">${p.stickiness_score}%</span></td>
+                    <td><span class="score ${getRiskClass(p.abandonment_risk)}">${p.abandonment_risk}%</span></td>
+                    <td>
+                        <span class="trend ${p.trend}">
+                            ${getTrendIcon(p.trend)} ${p.trend}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderUsageChart(products) {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+
+            if (usageChart) {
+                usageChart.destroy();
+            }
+
+            // Aggregate queries by date across all products
+            const queryData = {};
+            products.forEach(p => {
+                if (p.query_frequency) {
+                    p.query_frequency.forEach(qf => {
+                        queryData[qf.date] = (queryData[qf.date] || 0) + qf.count;
+                    });
+                }
+            });
+
+            const sortedDates = Object.keys(queryData).sort();
+            const counts = sortedDates.map(d => queryData[d]);
+
+            usageChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedDates.map(d => formatDate(d)),
+                    datasets: [{
+                        label: 'Total Queries',
+                        data: counts,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#64748b' }
+                        },
+                        y: {
+                            grid: { color: '#334155' },
+                            ticks: { color: '#64748b' }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function showProductDetail(productId) {
+            try {
+                const response = await fetch(`/api/products/${productId}`);
+                const product = await response.json();
+
+                document.getElementById('modalTitle').textContent = product.name;
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="detail-grid">
+                        <div class="detail-card">
+                            <div class="value">${product.adoption_score}%</div>
+                            <div class="label">Adoption Score</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="value">${product.stickiness_score}%</div>
+                            <div class="label">Stickiness Score</div>
+                        </div>
+                        <div class="detail-card">
+                            <div class="value" style="color: ${product.abandonment_risk > 50 ? '#f87171' : '#4ade80'}">${product.abandonment_risk}%</div>
+                            <div class="label">Abandonment Risk</div>
+                        </div>
+                    </div>
+
+                    <div class="charts-row">
+                        <div class="chart-card">
+                            <h3>Query Frequency</h3>
+                            <canvas id="detailQueryChart"></canvas>
+                        </div>
+                        <div class="chart-card">
+                            <h3>User Types</h3>
+                            <canvas id="detailUserChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card" style="margin-bottom: 16px;">
+                        <h3>Most Accessed Tables</h3>
+                        <div class="tables-list">
+                            ${product.tables_accessed.map(t => `
+                                <span class="table-tag">${t.table}<span class="count">${t.count}</span></span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3>Retention Cohorts</h3>
+                        <table class="retention-table">
+                            <thead>
+                                <tr>
+                                    <th>Cohort</th>
+                                    <th>Size</th>
+                                    <th>Week 0</th>
+                                    <th>Week 1</th>
+                                    <th>Week 2</th>
+                                    <th>Week 3</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${product.retention_cohorts.map(c => `
+                                    <tr>
+                                        <td>${c.week}</td>
+                                        <td>${c.cohort_size}</td>
+                                        ${c.retention.map(r => `
+                                            <td><span class="retention-cell" style="background: rgba(59, 130, 246, ${r/100}); padding: 4px 8px; border-radius: 4px;">${r}%</span></td>
+                                        `).join('')}
+                                        ${Array(4 - c.retention.length).fill('<td>-</td>').join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button class="btn" style="margin-top: 16px;" onclick="getProductInsights(${productId})">Get AI Insights for ${product.name}</button>
+                    <div id="productInsights" style="margin-top: 16px; padding: 16px; background: #0f172a; border-radius: 8px; display: none;">
+                        <div class="insights-content" id="productInsightsContent"></div>
+                    </div>
+                `;
+
+                // Render detail charts
+                setTimeout(() => {
+                    renderDetailCharts(product);
+                }, 100);
+
+                document.getElementById('modalOverlay').classList.add('active');
+            } catch (error) {
+                console.error('Error loading product detail:', error);
+            }
+        }
+
+        function renderDetailCharts(product) {
+            // Query frequency chart
+            const queryCtx = document.getElementById('detailQueryChart').getContext('2d');
+            new Chart(queryCtx, {
+                type: 'bar',
+                data: {
+                    labels: product.query_frequency.slice(-14).map(qf => formatDate(qf.date)),
+                    datasets: [{
+                        data: product.query_frequency.slice(-14).map(qf => qf.count),
+                        backgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#64748b' } },
+                        y: { grid: { color: '#334155' }, ticks: { color: '#64748b' } }
+                    }
+                }
+            });
+
+            // User types chart
+            const userCtx = document.getElementById('detailUserChart').getContext('2d');
+            new Chart(userCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: product.user_types.map(ut => ut.type),
+                    datasets: [{
+                        data: product.user_types.map(ut => ut.count),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === document.getElementById('modalOverlay')) {
+                document.getElementById('modalOverlay').classList.remove('active');
+            }
+        }
+
+        async function getInsights() {
+            const btn = document.getElementById('getInsightsBtn');
+            const content = document.getElementById('insightsContent');
+
+            btn.disabled = true;
+            content.innerHTML = '<div class="insights-loading"><div class="spinner"></div> Generating insights...</div>';
+
+            try {
+                const response = await fetch('/api/insights', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                content.innerHTML = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.content) {
+                                    content.innerHTML += data.content;
+                                } else if (data.error) {
+                                    content.innerHTML = `<span style="color: #f87171;">Error: ${data.error}</span><br><br>Make sure Foundry Local is running.`;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (error) {
+                content.innerHTML = `<span style="color: #f87171;">Failed to generate insights. Make sure Foundry Local is running on port 58075.</span>`;
+            }
+
+            btn.disabled = false;
+        }
+
+        async function getProductInsights(productId) {
+            const container = document.getElementById('productInsights');
+            const content = document.getElementById('productInsightsContent');
+
+            container.style.display = 'block';
+            content.innerHTML = '<div class="insights-loading"><div class="spinner"></div> Generating insights...</div>';
+
+            try {
+                const response = await fetch('/api/insights', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ product_id: productId })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                content.innerHTML = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.content) {
+                                    content.innerHTML += data.content;
+                                } else if (data.error) {
+                                    content.innerHTML = `<span style="color: #f87171;">Error: ${data.error}</span>`;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+            } catch (error) {
+                content.innerHTML = `<span style="color: #f87171;">Failed to generate insights.</span>`;
+            }
+        }
+
+        // Utility functions
+        function getScoreClass(score) {
+            if (score >= 70) return 'high';
+            if (score >= 40) return 'medium';
+            return 'low';
+        }
+
+        function getRiskClass(risk) {
+            if (risk >= 50) return 'low';
+            if (risk >= 25) return 'medium';
+            return 'high';
+        }
+
+        function getTrendIcon(trend) {
+            if (trend === 'growing') return '&#x2197;';
+            if (trend === 'declining') return '&#x2198;';
+            return '&#x2192;';
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toString();
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        // Chat functionality
+        let chatOpen = false;
+        let isStreaming = false;
+
+        function toggleChat() {
+            chatOpen = !chatOpen;
+            document.getElementById('chatPanel').classList.toggle('active', chatOpen);
+            if (chatOpen) {
+                document.getElementById('chatInput').focus();
+            }
+        }
+
+        function handleChatKeypress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendChatMessage();
+            }
+        }
+
+        function askSuggestion(question) {
+            document.getElementById('chatInput').value = question;
+            sendChatMessage();
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const sendBtn = document.getElementById('chatSend');
+            const messagesContainer = document.getElementById('chatMessages');
+            const message = input.value.trim();
+
+            if (!message || isStreaming) return;
+
+            // Clear welcome message if present
+            const welcome = messagesContainer.querySelector('.chat-welcome');
+            if (welcome) {
+                welcome.remove();
+            }
+
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'chat-message user';
+            userMsg.textContent = message;
+            messagesContainer.appendChild(userMsg);
+
+            // Clear input
+            input.value = '';
+            input.disabled = true;
+            sendBtn.disabled = true;
+            isStreaming = true;
+
+            // Create assistant message placeholder
+            const assistantMsg = document.createElement('div');
+            assistantMsg.className = 'chat-message assistant streaming';
+            assistantMsg.innerHTML = '<div class="spinner" style="width: 12px; height: 12px; border-width: 2px;"></div>';
+            messagesContainer.appendChild(assistantMsg);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                assistantMsg.textContent = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                if (data.content) {
+                                    assistantMsg.textContent += data.content;
+                                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                                } else if (data.error) {
+                                    assistantMsg.innerHTML = `<span style="color: #f87171;">Error: ${data.error}</span>`;
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                }
+
+                assistantMsg.classList.remove('streaming');
+            } catch (error) {
+                assistantMsg.innerHTML = `<span style="color: #f87171;">Failed to get response. Make sure Foundry Local is running.</span>`;
+                assistantMsg.classList.remove('streaming');
+            }
+
+            input.disabled = false;
+            sendBtn.disabled = false;
+            isStreaming = false;
+            input.focus();
+        }
+    </script>
+</body>
+</html>
