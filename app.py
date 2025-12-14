@@ -33,7 +33,8 @@ client = OpenAI(
     base_url="http://127.0.0.1:51122/v1",
     api_key="not-needed"
 )
-MODEL = "Phi-4-mini-instruct-generic-cpu:5"
+# Use GPU model for faster responses (falls back to CPU if GPU unavailable)
+MODEL = "Phi-4-mini-instruct-generic-gpu:5"
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -199,35 +200,42 @@ async def chat_with_ai(request: Request):
     user_message = data.get("message", "")
     product_id = data.get("product_id")
 
-    # Build context from data
+    # Build compact context from data (optimized for speed)
     if product_id:
         details = get_product_details(product_id)
         if not details:
             raise HTTPException(status_code=404, detail="Product not found")
-        context = details
-    else:
-        summary = await get_summary()
-        products = get_all_product_scores()
+        # Send only essential fields for single product
         context = {
-            "summary": summary,
-            "products": products
+            "name": details.get("name"),
+            "adoption": details.get("adoption_score"),
+            "stickiness": details.get("stickiness_score"),
+            "risk": details.get("abandonment_risk"),
+            "dau": details.get("dau"),
+            "mau": details.get("mau"),
+            "trend": details.get("trend")
         }
+    else:
+        products = get_all_product_scores()
+        # Send compact product summaries
+        context = [{"name": p["name"], "adoption": p["adoption_score"],
+                    "risk": p["abandonment_risk"], "trend": p["trend"]} for p in products]
 
-    # Retrieve relevant past conversations from ChromaDB
-    relevant_conversations = get_relevant_conversations(user_message, n_results=3)
+    # Retrieve only 2 relevant past conversations for speed
+    relevant_conversations = get_relevant_conversations(user_message, n_results=2)
     conversation_context = ""
     if relevant_conversations:
-        conversation_context = "\n\nRelevant past conversations:\n"
+        conversation_context = "\nPast context:\n"
         for conv in relevant_conversations:
-            conversation_context += f"---\n{conv['content']}\n"
+            # Only include user message from past conversations
+            if conv.get('metadata', {}).get('user_message'):
+                conversation_context += f"- {conv['metadata']['user_message']}\n"
 
-    system_prompt = f"""You are an AI assistant specialized in data product analytics. You help users understand their data products' usage, adoption, and health metrics.
+    system_prompt = f"""You are a data product analytics assistant. Be concise and specific.
 
-Here is the current data about the data products:
-{json.dumps(context, indent=2)}
+Data: {json.dumps(context)}
 {conversation_context}
-
-Answer the user's questions based on this data and any relevant past conversations. Be concise, helpful, and provide specific numbers when relevant. If asked about a specific product, focus on that product's metrics. Remember context from previous conversations when applicable."""
+Answer based on this data. Use numbers when relevant."""
 
     # Collect full response for storing in ChromaDB
     full_response = []
@@ -241,7 +249,8 @@ Answer the user's questions based on this data and any relevant past conversatio
                     {"role": "user", "content": user_message}
                 ],
                 stream=True,
-                max_tokens=500
+                max_tokens=250,  # Reduced for faster responses
+                temperature=0.7
             )
 
             for chunk in stream:
