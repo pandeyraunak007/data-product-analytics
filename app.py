@@ -11,6 +11,14 @@ from analytics import (
     get_query_frequency,
     get_retention_cohorts
 )
+from vector_store import (
+    store_conversation,
+    get_relevant_conversations,
+    store_data_product_info,
+    get_conversation_count,
+    persist,
+    is_available as chromadb_available
+)
 
 app = FastAPI(title="Data Product Usage Analytics Platform")
 
@@ -186,7 +194,7 @@ Be specific and actionable. Format as bullet points."""
 
 @app.post("/api/chat")
 async def chat_with_ai(request: Request):
-    """Chat with AI about data products"""
+    """Chat with AI about data products with conversation memory"""
     data = await request.json()
     user_message = data.get("message", "")
     product_id = data.get("product_id")
@@ -205,12 +213,24 @@ async def chat_with_ai(request: Request):
             "products": products
         }
 
+    # Retrieve relevant past conversations from ChromaDB
+    relevant_conversations = get_relevant_conversations(user_message, n_results=3)
+    conversation_context = ""
+    if relevant_conversations:
+        conversation_context = "\n\nRelevant past conversations:\n"
+        for conv in relevant_conversations:
+            conversation_context += f"---\n{conv['content']}\n"
+
     system_prompt = f"""You are an AI assistant specialized in data product analytics. You help users understand their data products' usage, adoption, and health metrics.
 
 Here is the current data about the data products:
 {json.dumps(context, indent=2)}
+{conversation_context}
 
-Answer the user's questions based on this data. Be concise, helpful, and provide specific numbers when relevant. If asked about a specific product, focus on that product's metrics."""
+Answer the user's questions based on this data and any relevant past conversations. Be concise, helpful, and provide specific numbers when relevant. If asked about a specific product, focus on that product's metrics. Remember context from previous conversations when applicable."""
+
+    # Collect full response for storing in ChromaDB
+    full_response = []
 
     async def generate():
         try:
@@ -226,7 +246,19 @@ Answer the user's questions based on this data. Be concise, helpful, and provide
 
             for chunk in stream:
                 if chunk.choices[0].delta.content:
-                    yield f"data: {json.dumps({'content': chunk.choices[0].delta.content})}\n\n"
+                    content = chunk.choices[0].delta.content
+                    full_response.append(content)
+                    yield f"data: {json.dumps({'content': content})}\n\n"
+
+            # Store the conversation in ChromaDB after completion
+            complete_response = "".join(full_response)
+            if complete_response:
+                store_conversation(
+                    user_message=user_message,
+                    assistant_response=complete_response,
+                    metadata={"product_id": str(product_id) if product_id else "all"}
+                )
+                persist()
 
             yield "data: [DONE]\n\n"
         except Exception as e:
@@ -234,6 +266,15 @@ Answer the user's questions based on this data. Be concise, helpful, and provide
             yield "data: [DONE]\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+@app.get("/api/chat/stats")
+async def get_chat_stats():
+    """Get chat statistics"""
+    return {
+        "total_conversations": get_conversation_count(),
+        "memory_enabled": chromadb_available()
+    }
 
 
 if __name__ == "__main__":

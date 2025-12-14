@@ -12,12 +12,14 @@ A dashboard for tracking adoption, stickiness, and health of internal data produ
 - **Interactive Charts** - Visualize query trends and user behavior patterns
 - **AI-Powered Insights** - Get recommendations using Phi-4-mini via Foundry Local
 - **AI Chat Interface** - Ask questions about your data products in natural language
+- **Conversation Memory** - ChromaDB-powered memory to remember past conversations and provide context-aware responses
 - **Detailed Product Views** - Drill down into retention cohorts, user types, and table access patterns
 
 ## Prerequisites
 
 - Python 3.8+
 - [Foundry Local](https://github.com/microsoft/foundry-local) with Phi-4-mini model
+- (Optional) [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) - Required for ChromaDB conversation memory on Windows
 
 ## Setup
 
@@ -99,6 +101,7 @@ Click the chat icon (bottom-right corner) to open the AI assistant. Ask question
 | `/api/track` | POST | Track a usage event |
 | `/api/insights` | POST | Generate AI insights |
 | `/api/chat` | POST | Chat with AI about data products |
+| `/api/chat/stats` | GET | Chat statistics and memory status |
 
 ## Project Structure
 
@@ -107,7 +110,9 @@ data-product-analytics/
 ├── app.py              # FastAPI application and routes
 ├── models.py           # Database models and initialization
 ├── analytics.py        # Analytics calculations and queries
+├── vector_store.py     # ChromaDB vector store for conversation memory
 ├── requirements.txt    # Python dependencies
+├── chroma_db/          # ChromaDB persistent storage (auto-created)
 └── static/
     └── index.html      # Dashboard UI
 ```
