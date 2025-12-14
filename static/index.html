@@ -516,6 +516,35 @@
             background: rgba(255, 255, 255, 0.3);
         }
 
+        .memory-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .memory-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .memory-status .status-dot.enabled {
+            background: #4ade80;
+            box-shadow: 0 0 6px #4ade80;
+        }
+
+        .memory-status .status-dot.disabled {
+            background: #f87171;
+        }
+
+        .memory-status .status-text {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -771,7 +800,13 @@
                 </svg>
                 AI Insights
             </h3>
-            <button class="chat-close" onclick="toggleChat()">&times;</button>
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="memory-status" id="memoryStatus" title="Conversation memory status">
+                    <span class="status-dot disabled" id="memoryDot"></span>
+                    <span class="status-text" id="memoryText">Loading...</span>
+                </div>
+                <button class="chat-close" onclick="toggleChat()">&times;</button>
+            </div>
         </div>
         <div class="chat-messages" id="chatMessages">
             <div class="chat-welcome">
@@ -1201,6 +1236,30 @@
             document.getElementById('chatPanel').classList.toggle('active', chatOpen);
             if (chatOpen) {
                 document.getElementById('chatInput').focus();
+                loadMemoryStatus();
+            }
+        }
+
+        async function loadMemoryStatus() {
+            try {
+                const response = await fetch('/api/chat/stats');
+                const data = await response.json();
+
+                const dot = document.getElementById('memoryDot');
+                const text = document.getElementById('memoryText');
+
+                if (data.memory_enabled) {
+                    dot.className = 'status-dot enabled';
+                    text.textContent = `Memory: ${data.total_conversations}`;
+                    document.getElementById('memoryStatus').title = `Conversation memory enabled - ${data.total_conversations} conversations stored`;
+                } else {
+                    dot.className = 'status-dot disabled';
+                    text.textContent = 'No memory';
+                    document.getElementById('memoryStatus').title = 'Conversation memory disabled - install Visual C++ Redistributable to enable';
+                }
+            } catch (error) {
+                console.error('Error loading memory status:', error);
+                document.getElementById('memoryText').textContent = 'Error';
             }
         }
 
@@ -1292,6 +1351,9 @@
             sendBtn.disabled = false;
             isStreaming = false;
             input.focus();
+
+            // Refresh memory status after conversation is stored
+            setTimeout(loadMemoryStatus, 500);
         }
     </script>
 </body>
