@@ -127,6 +127,39 @@ The application uses these default settings:
 
 To modify these, edit the constants in `app.py`.
 
+## Vercel Deployment
+
+This app supports deployment to Vercel with PostgreSQL and OpenAI.
+
+### Prerequisites for Vercel
+
+1. **OpenAI API Key** - Get one from [OpenAI Platform](https://platform.openai.com/)
+2. **PostgreSQL Database** - Use one of:
+   - [Supabase](https://supabase.com/) (free tier available)
+   - [Neon](https://neon.tech/) (free tier available)
+   - [Vercel Postgres](https://vercel.com/storage/postgres)
+
+### Deploy to Vercel
+
+1. Push your code to GitHub (already done)
+
+2. Go to [Vercel](https://vercel.com/) and import your GitHub repository
+
+3. Add environment variables in Vercel:
+   - `OPENAI_API_KEY` - Your OpenAI API key
+   - `DATABASE_URL` - PostgreSQL connection string
+
+4. Deploy!
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `OPENAI_API_KEY` | OpenAI API key for AI features | Yes (Vercel) |
+| `DATABASE_URL` | PostgreSQL connection string | Yes (Vercel) |
+
+For local development, leave these unset to use SQLite + Foundry Local.
+
 ## License
 
 MIT
