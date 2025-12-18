@@ -1,0 +1,4 @@
+fastapi
+openai
+pydantic
+psycopg2-binary

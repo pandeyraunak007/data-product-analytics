@@ -10,3 +10,6 @@ venv/
 .claude/
 chroma_db/
 .vercel/
+
+.vercel
+.env*.local
