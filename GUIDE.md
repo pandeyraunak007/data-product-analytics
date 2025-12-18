@@ -27,6 +27,27 @@ A comprehensive guide to understanding the Data Product Analytics Platform, its 
 
 This platform helps organizations track how their internal **data products** (dashboards, reports, datasets, analytics tools) are being used. Think of it as "Google Analytics" but for your internal data tools.
 
+```mermaid
+mindmap
+  root((📊 Data Product Analytics))
+    📈 Track Usage
+      DAU/WAU/MAU
+      Query Counts
+      User Sessions
+    🎯 Measure Adoption
+      Adoption Score
+      Stickiness Score
+      Retention Rate
+    ⚠️ Identify Risks
+      Abandonment Risk
+      Declining Trends
+      Low Engagement
+    🤖 AI Insights
+      Recommendations
+      Pattern Analysis
+      Natural Language Q&A
+```
+
 ### Problems it Solves
 
 | Problem | Solution |
@@ -38,79 +59,116 @@ This platform helps organizations track how their internal **data products** (da
 
 ### Key Metrics Tracked
 
-- **DAU** (Daily Active Users) - Users who accessed today
-- **WAU** (Weekly Active Users) - Users in the last 7 days
-- **MAU** (Monthly Active Users) - Users in the last 30 days
-- **Adoption Score** - How well a product is being adopted (0-100%)
-- **Stickiness Score** - How often users return (DAU/MAU ratio)
-- **Abandonment Risk** - Likelihood of users leaving (0-100%)
+```mermaid
+graph LR
+    subgraph "📊 User Metrics"
+        DAU["👤 DAU<br/>Daily Active Users"]
+        WAU["👥 WAU<br/>Weekly Active Users"]
+        MAU["👨‍👩‍👧‍👦 MAU<br/>Monthly Active Users"]
+    end
+
+    subgraph "📈 Health Scores"
+        AS["🎯 Adoption Score<br/>0-100%"]
+        SS["🔄 Stickiness Score<br/>DAU/MAU Ratio"]
+        AR["⚠️ Abandonment Risk<br/>0-100%"]
+    end
+
+    DAU --> SS
+    MAU --> AS
+    MAU --> SS
+    SS --> AR
+```
 
 ---
 
 ## Architecture Overview
 
-### High-Level Architecture Diagram
+### High-Level System Architecture
 
+```mermaid
+flowchart TB
+    subgraph Users["👥 Users"]
+        U1["🧑‍💻 User 1"]
+        U2["🧑‍💻 User 2"]
+        U3["🧑‍💻 User N"]
+    end
+
+    subgraph Frontend["🖥️ Frontend Layer"]
+        UI["📱 Dashboard UI<br/>index.html"]
+        Charts["📊 Charts<br/>Chart.js"]
+        Chat["💬 AI Chat Panel"]
+    end
+
+    subgraph API["⚡ API Layer"]
+        direction LR
+        Local["🏠 Local Mode<br/>FastAPI + Uvicorn<br/>Port 8001"]
+        Cloud["☁️ Cloud Mode<br/>Vercel Serverless"]
+    end
+
+    subgraph Data["💾 Data Layer"]
+        direction TB
+        SQLite["📁 SQLite<br/>Local DB"]
+        Postgres["🐘 PostgreSQL<br/>Neon Cloud"]
+    end
+
+    subgraph AI["🤖 AI Layer"]
+        direction TB
+        Foundry["🏠 Foundry Local<br/>Phi-4-mini"]
+        Groq["⚡ Groq API<br/>Llama 3.3 70B"]
+        ChromaDB["🧠 ChromaDB<br/>Memory Store"]
+    end
+
+    Users --> Frontend
+    Frontend --> API
+    Local --> SQLite
+    Local --> Foundry
+    Local --> ChromaDB
+    Cloud --> Postgres
+    Cloud --> Groq
+
+    style Users fill:#e1f5fe
+    style Frontend fill:#fff3e0
+    style API fill:#e8f5e9
+    style Data fill:#fce4ec
+    style AI fill:#f3e5f5
 ```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                                   USER LAYER                                     │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│    ┌──────────────┐         ┌──────────────┐         ┌──────────────┐          │
-│    │   Browser    │         │   Browser    │         │   Browser    │          │
-│    │   (User 1)   │         │   (User 2)   │         │   (User N)   │          │
-│    └──────┬───────┘         └──────┬───────┘         └──────┬───────┘          │
-│           │                        │                        │                   │
-│           └────────────────────────┼────────────────────────┘                   │
-│                                    │                                            │
-│                                    ▼                                            │
-│                        ┌───────────────────────┐                                │
-│                        │    Dashboard UI       │                                │
-│                        │   (index.html)        │                                │
-│                        │  - Summary Cards      │                                │
-│                        │  - Product Table      │                                │
-│                        │  - Charts             │                                │
-│                        │  - AI Chat Panel      │                                │
-│                        └───────────┬───────────┘                                │
-│                                    │                                            │
-└────────────────────────────────────┼────────────────────────────────────────────┘
-                                     │ HTTP Requests
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                                 API LAYER                                        │
-├─────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│         LOCAL MODE                              CLOUD MODE (Vercel)              │
-│    ┌───────────────────────┐             ┌───────────────────────┐              │
-│    │    FastAPI Server     │             │  Vercel Serverless    │              │
-│    │     (app.py)          │             │   (api/index.py)      │              │
-│    │    Port: 8001         │             │   Auto-scaling        │              │
-│    └───────────┬───────────┘             └───────────┬───────────┘              │
-│                │                                     │                          │
-└────────────────┼─────────────────────────────────────┼──────────────────────────┘
-                 │                                     │
-                 ▼                                     ▼
-┌────────────────────────────────┐    ┌────────────────────────────────┐
-│        LOCAL DATA LAYER        │    │       CLOUD DATA LAYER         │
-├────────────────────────────────┤    ├────────────────────────────────┤
-│                                │    │                                │
-│  ┌────────────────┐            │    │  ┌────────────────┐            │
-│  │   SQLite DB    │            │    │  │Neon PostgreSQL │            │
-│  │ (analytics.db) │            │    │  │  (Cloud DB)    │            │
-│  └────────────────┘            │    │  └────────────────┘            │
-│                                │    │                                │
-│  ┌────────────────┐            │    │  ┌────────────────┐            │
-│  │   ChromaDB     │            │    │  │   Groq API     │            │
-│  │ (AI Memory)    │            │    │  │(Llama 3.3 70B) │            │
-│  └────────────────┘            │    │  │    FREE        │            │
-│                                │    │  └────────────────┘            │
-│  ┌────────────────┐            │    │                                │
-│  │ Foundry Local  │            │    │                                │
-│  │ (Phi-4-mini)   │            │    │                                │
-│  └────────────────┘            │    │                                │
-│                                │    │                                │
-│  Cost: $0                      │    │  Cost: $0 (all free tiers)     │
-└────────────────────────────────┘    └────────────────────────────────┘
+
+### Request Flow
+
+```mermaid
+sequenceDiagram
+    participant U as 👤 User
+    participant B as 🌐 Browser
+    participant S as ⚡ Server
+    participant D as 💾 Database
+    participant A as 🤖 AI Model
+
+    U->>B: Opens Dashboard
+    B->>S: GET /
+    S->>B: 📄 index.html
+
+    B->>S: GET /api/summary
+    S->>D: Query Stats
+    D->>S: 📊 Statistics
+    S->>B: JSON Response
+
+    B->>S: GET /api/products
+    S->>D: Query Products
+    D->>S: 📋 Product List
+    S->>B: JSON Response
+
+    B->>U: 🖥️ Dashboard Rendered
+
+    Note over U,A: User asks AI question
+
+    U->>B: "Which product is at risk?"
+    B->>S: POST /api/chat
+    S->>D: Fetch Product Data
+    D->>S: 📊 Data
+    S->>A: Send Prompt + Context
+    A-->>S: 🔄 Stream Response
+    S-->>B: 🔄 SSE Stream
+    B-->>U: 💬 AI Response
 ```
 
 ---
@@ -119,587 +177,632 @@ This platform helps organizations track how their internal **data products** (da
 
 This application supports two deployment modes:
 
+```mermaid
+flowchart LR
+    subgraph Local["🏠 Local Mode"]
+        direction TB
+        L1["💾 SQLite Database"]
+        L2["🤖 Foundry Local<br/>Phi-4-mini"]
+        L3["🧠 ChromaDB Memory"]
+        L4["⚡ FastAPI Server"]
+        L1 --- L4
+        L2 --- L4
+        L3 --- L4
+    end
+
+    subgraph Cloud["☁️ Cloud Mode (Vercel)"]
+        direction TB
+        C1["🐘 Neon PostgreSQL"]
+        C2["⚡ Groq API<br/>Llama 3.3 70B"]
+        C3["🚀 Vercel Serverless"]
+        C1 --- C3
+        C2 --- C3
+    end
+
+    Dev["🧑‍💻 Developer"] --> Local
+    Public["🌍 Public Users"] --> Cloud
+
+    style Local fill:#e3f2fd
+    style Cloud fill:#e8f5e9
+```
+
 ### Local Mode (Development)
 
 Best for development and testing on your machine.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    LOCAL MODE                                │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Database:     SQLite (analytics.db)                        │
-│  AI Model:     Foundry Local (Phi-4-mini)                   │
-│  AI Memory:    ChromaDB (vector store)                      │
-│  Server:       FastAPI + Uvicorn                            │
-│  Port:         8001                                         │
-│                                                             │
-│  Requirements:                                              │
-│  - Python 3.8+                                              │
-│  - Foundry Local running                                    │
-│  - ~4GB RAM for AI model                                    │
-│                                                             │
-│  Pros:                                                      │
-│  ✓ No internet required (after setup)                       │
-│  ✓ Full conversation memory                                 │
-│  ✓ Data stays on your machine                               │
-│  ✓ Customizable                                             │
-│                                                             │
-│  Cons:                                                      │
-│  ✗ Requires local setup                                     │
-│  ✗ Slower AI responses (CPU)                                │
-│  ✗ Not shareable                                            │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph "🏠 Local Development Stack"
+        A["🐍 Python 3.8+"] --> B["⚡ FastAPI"]
+        B --> C["📁 SQLite"]
+        B --> D["🤖 Foundry Local"]
+        D --> E["🧠 Phi-4-mini Model"]
+        B --> F["💾 ChromaDB"]
+        F --> G["📝 Conversation Memory"]
+    end
+
+    H["💰 Cost: $0"] --> A
+    I["🔒 Data: Local Only"] --> A
+    J["⏱️ AI Speed: Slow (CPU)"] --> D
 ```
 
 ### Cloud Mode (Vercel)
 
 Best for sharing and production use.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    CLOUD MODE (Vercel)                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Database:     Neon PostgreSQL (cloud)                      │
-│  AI Model:     Groq API (Llama 3.3 70B)                     │
-│  AI Memory:    Disabled (serverless limitation)             │
-│  Server:       Vercel Serverless Functions                  │
-│  URL:          https://data-product-analytics.vercel.app    │
-│                                                             │
-│  Requirements:                                              │
-│  - Vercel account (free)                                    │
-│  - Neon account (free)                                      │
-│  - Groq account (free)                                      │
-│                                                             │
-│  Pros:                                                      │
-│  ✓ No setup required to use                                 │
-│  ✓ Fast AI responses (Groq)                                 │
-│  ✓ Shareable URL                                            │
-│  ✓ Auto-scaling                                             │
-│  ✓ All FREE                                                 │
-│                                                             │
-│  Cons:                                                      │
-│  ✗ No conversation memory                                   │
-│  ✗ Requires internet                                        │
-│  ✗ Cold starts possible                                     │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph "☁️ Cloud Production Stack"
+        A["🚀 Vercel"] --> B["⚡ Serverless Functions"]
+        B --> C["🐘 Neon PostgreSQL"]
+        B --> D["⚡ Groq API"]
+        D --> E["🦙 Llama 3.3 70B"]
+    end
+
+    F["💰 Cost: $0 (Free Tiers)"] --> A
+    G["🌍 Access: Public URL"] --> A
+    H["⚡ AI Speed: Fast (GPU)"] --> D
 ```
 
 ### Comparison Table
 
-| Feature | Local Mode | Cloud Mode (Vercel) |
+| Feature | 🏠 Local Mode | ☁️ Cloud Mode (Vercel) |
 |---------|------------|---------------------|
 | **URL** | http://localhost:8001 | https://data-product-analytics.vercel.app |
-| **Database** | SQLite | Neon PostgreSQL |
-| **AI Provider** | Foundry Local (Phi-4-mini) | Groq (Llama 3.3 70B) |
-| **AI Speed** | Slow (CPU) | Fast (cloud GPU) |
-| **Memory** | Yes (ChromaDB) | No |
-| **Setup** | Required | One-click |
-| **Cost** | $0 | $0 |
-| **Sharing** | Local only | Public URL |
+| **Database** | 📁 SQLite | 🐘 Neon PostgreSQL |
+| **AI Provider** | 🤖 Foundry Local (Phi-4-mini) | ⚡ Groq (Llama 3.3 70B) |
+| **AI Speed** | 🐢 Slow (CPU) | 🚀 Fast (cloud GPU) |
+| **Memory** | ✅ Yes (ChromaDB) | ❌ No |
+| **Setup** | 🔧 Required | ✨ One-click |
+| **Cost** | 💰 $0 | 💰 $0 |
+| **Sharing** | 🔒 Local only | 🌍 Public URL |
 
 ---
 
 ## System Components
 
+### Component Overview
+
+```mermaid
+graph TB
+    subgraph "🖥️ Frontend"
+        HTML["📄 index.html"]
+        CSS["🎨 CSS Styles"]
+        JS["⚡ JavaScript"]
+        ChartJS["📊 Chart.js"]
+    end
+
+    subgraph "⚙️ Backend"
+        FastAPI["🐍 FastAPI"]
+        Pydantic["✅ Pydantic"]
+        OpenAI["🔌 OpenAI SDK"]
+    end
+
+    subgraph "💾 Database"
+        SQLite["📁 SQLite"]
+        Postgres["🐘 PostgreSQL"]
+    end
+
+    subgraph "🤖 AI Services"
+        Foundry["🏠 Foundry Local"]
+        Groq["⚡ Groq API"]
+        Chroma["🧠 ChromaDB"]
+    end
+
+    HTML --> FastAPI
+    FastAPI --> SQLite
+    FastAPI --> Postgres
+    FastAPI --> Foundry
+    FastAPI --> Groq
+    FastAPI --> Chroma
+```
+
 ### 1. Frontend (User Interface)
 
 **File:** `static/index.html`
 
-The dashboard that users see in their browser. Built with pure HTML, CSS, and JavaScript (no frameworks).
+```mermaid
+graph LR
+    subgraph "📱 Dashboard Components"
+        A["📊 Summary Cards"]
+        B["📋 Products Table"]
+        C["📈 Trend Charts"]
+        D["💬 AI Chat"]
+        E["🔍 Product Details"]
+    end
 
-```
-┌────────────────────────────────────────────────────────────────┐
-│  Data Product Usage Analytics                                   │
-├────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐  │
-│  │Active   │ │Products │ │Queries  │ │Adoption │ │At Risk  │  │
-│  │Users    │ │   6     │ │  3.2K   │ │  100%   │ │   0     │  │
-│  │   4     │ │         │ │         │ │         │ │         │  │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘  │
-│                                                                 │
-│  ┌─────────────────────────────┐  ┌──────────────────────────┐ │
-│  │     Products Table          │  │    Query Trends Chart    │ │
-│  │  ┌─────────┬─────┬─────┐   │  │         📈               │ │
-│  │  │Product  │Score│Risk │   │  │                          │ │
-│  │  ├─────────┼─────┼─────┤   │  └──────────────────────────┘ │
-│  │  │Customer │100% │  0% │   │                               │
-│  │  │Revenue  │100% │  0% │   │  ┌──────────────────────────┐ │
-│  │  │Sales    │100% │  0% │   │  │     AI Insights          │ │
-│  │  └─────────┴─────┴─────┘   │  │  [Generate Insights]     │ │
-│  └─────────────────────────────┘  └──────────────────────────┘ │
-│                                                          💬    │
-└────────────────────────────────────────────────────────────────┘
-                                                    Chat Button ──┘
+    A --> |Click| E
+    B --> |Click Row| E
+    D --> |Ask Question| F["🤖 AI Response"]
 ```
 
 **Key UI Components:**
-- **Summary Cards** - Quick metrics overview
-- **Products Table** - Clickable rows for detailed view
-- **Charts** - Visual trends using Chart.js
-- **AI Chat** - Floating chat button (bottom-right)
+- **📊 Summary Cards** - Quick metrics overview
+- **📋 Products Table** - Clickable rows for detailed view
+- **📈 Charts** - Visual trends using Chart.js
+- **💬 AI Chat** - Floating chat button (bottom-right)
 
 ---
 
 ### 2. Backend API
 
-**Local:** `app.py`
-**Cloud:** `api/index.py`
+**Local:** `app.py` | **Cloud:** `api/index.py`
 
-The server that handles all requests and connects everything.
-
-**What it does:**
-- Serves the web page
-- Handles API requests
-- Connects to the database
-- Talks to the AI model
-
-**Key Endpoints:**
-
-| Endpoint | What it does |
-|----------|--------------|
-| `GET /` | Serves the dashboard page |
-| `GET /api/health` | Health check and config info |
-| `GET /api/products` | Returns all products with scores |
-| `GET /api/summary` | Returns platform statistics |
-| `POST /api/chat` | Handles AI chat messages |
+```mermaid
+graph LR
+    subgraph "🔌 API Endpoints"
+        A["GET /"] --> A1["📄 Dashboard"]
+        B["GET /api/health"] --> B1["✅ Status"]
+        C["GET /api/summary"] --> C1["📊 Stats"]
+        D["GET /api/products"] --> D1["📋 Products"]
+        E["POST /api/chat"] --> E1["💬 AI Chat"]
+        F["POST /api/insights"] --> F1["💡 Insights"]
+    end
+```
 
 ---
 
 ### 3. Database Layer
 
-**Local:** SQLite (`analytics.db`)
-**Cloud:** Neon PostgreSQL
+```mermaid
+erDiagram
+    DATA_PRODUCTS ||--o{ USAGE_EVENTS : "has many"
+    USERS ||--o{ USAGE_EVENTS : "creates"
 
-Stores all the usage data.
+    DATA_PRODUCTS {
+        int id PK "🔑 Primary Key"
+        string name "📛 Product Name"
+        string description "📝 Description"
+        string owner "👤 Owner"
+        datetime created_at "📅 Created"
+    }
 
-**Tables:**
+    USERS {
+        int id PK "🔑 Primary Key"
+        string user_id "👤 User ID"
+        string user_type "🏷️ Type"
+        string department "🏢 Department"
+        datetime created_at "📅 Created"
+    }
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  data_products  │     │     users       │     │  usage_events   │
-├─────────────────┤     ├─────────────────┤     ├─────────────────┤
-│ id              │     │ id              │     │ id              │
-│ name            │◄────┤ user_id         │     │ product_id ─────┼──┐
-│ description     │     │ department      │     │ user_id ────────┼──┤
-│ owner           │     │ created_at      │     │ event_type      │  │
-│ created_at      │     └─────────────────┘     │ timestamp       │  │
-└─────────────────┘                             │ query_duration  │  │
-        ▲                                       └─────────────────┘  │
-        │                                                            │
-        └────────────────────────────────────────────────────────────┘
+    USAGE_EVENTS {
+        int id PK "🔑 Primary Key"
+        int product_id FK "📦 Product"
+        int user_id FK "👤 User"
+        string event_type "🎯 Event Type"
+        int query_duration_ms "⏱️ Duration"
+        datetime timestamp "📅 Timestamp"
+    }
 ```
 
 ---
 
 ### 4. AI Layer
 
-**Local:** Foundry Local + ChromaDB
-**Cloud:** Groq API
+```mermaid
+flowchart TB
+    subgraph Local["🏠 Local AI Stack"]
+        direction TB
+        F["🤖 Foundry Local<br/>Port 51122"]
+        P["🧠 Phi-4-mini Model"]
+        C["💾 ChromaDB<br/>Vector Store"]
+        F --> P
+        F --> C
+    end
 
-#### Local: Foundry Local (Phi-4-mini)
+    subgraph Cloud["☁️ Cloud AI Stack"]
+        direction TB
+        G["⚡ Groq API"]
+        L["🦙 Llama 3.3 70B"]
+        G --> L
+    end
 
-```
-┌─────────────────────────────────────────────┐
-│           Foundry Local                      │
-│           Port: 51122                        │
-├─────────────────────────────────────────────┤
-│                                             │
-│   ┌─────────────────────────────────────┐   │
-│   │         Phi-4-mini Model            │   │
-│   │                                     │   │
-│   │  • Runs locally on your machine     │   │
-│   │  • ~4GB memory usage                │   │
-│   │  • CPU-based inference              │   │
-│   │  • OpenAI-compatible API            │   │
-│   └─────────────────────────────────────┘   │
-│                                             │
-└─────────────────────────────────────────────┘
-```
-
-#### Cloud: Groq API (Llama 3.3 70B)
-
-```
-┌─────────────────────────────────────────────┐
-│              Groq API                        │
-│     https://api.groq.com/openai/v1          │
-├─────────────────────────────────────────────┤
-│                                             │
-│   ┌─────────────────────────────────────┐   │
-│   │       Llama 3.3 70B Model           │   │
-│   │                                     │   │
-│   │  • Cloud-hosted (fast!)             │   │
-│   │  • FREE: 14,400 requests/day        │   │
-│   │  • GPU-accelerated                  │   │
-│   │  • OpenAI-compatible API            │   │
-│   └─────────────────────────────────────┘   │
-│                                             │
-└─────────────────────────────────────────────┘
+    Q["❓ User Question"] --> Local
+    Q --> Cloud
+    Local --> A["💬 AI Response"]
+    Cloud --> A
 ```
 
 ---
 
 ## Data Flow
 
-### Flow 1: Loading the Dashboard
+### Dashboard Loading Flow
 
-```
-User opens browser
-        │
-        ▼
-┌───────────────────┐
-│ GET /             │ ──► Returns index.html
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ GET /api/summary  │ ──► Returns {total_products: 6, active_users: 4, ...}
-└─────────┬─────────┘
-          │
-          ▼
-┌───────────────────┐
-│ GET /api/products │ ──► Returns [{name: "Customer 360", score: 100}, ...]
-└─────────┬─────────┘
-          │
-          ▼
-    Dashboard renders
-    with all data
+```mermaid
+sequenceDiagram
+    actor U as 👤 User
+    participant B as 🌐 Browser
+    participant S as ⚡ Server
+    participant DB as 💾 Database
+
+    U->>B: 🖱️ Open Dashboard
+    activate B
+
+    B->>S: GET / (Request Page)
+    S->>B: 📄 index.html
+
+    par Parallel API Calls
+        B->>S: GET /api/summary
+        S->>DB: 📊 Query Statistics
+        DB->>S: Stats Data
+        S->>B: 📊 Summary JSON
+    and
+        B->>S: GET /api/products
+        S->>DB: 📋 Query Products
+        DB->>S: Products Data
+        S->>B: 📋 Products JSON
+    end
+
+    B->>U: 🖥️ Render Dashboard
+    deactivate B
 ```
 
-### Flow 2: AI Chat Conversation
+### AI Chat Flow
 
-```
-User: "Which products need attention?"
-        │
-        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    /api/chat                                 │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Step 1: Fetch current product data from database           │
-│          ──► Got: 6 products with all their metrics         │
-│                                                             │
-│  Step 2: Build prompt for AI                                │
-│          ┌─────────────────────────────────────────────┐    │
-│          │ System: You are a data product analyst...   │    │
-│          │ Context: Here's the product data: {...}     │    │
-│          │ User: Which products need attention?        │    │
-│          └─────────────────────────────────────────────┘    │
-│                                                             │
-│  Step 3: Send to AI, stream response back                   │
-│          Local: Foundry Local (Phi-4-mini)                  │
-│          Cloud: Groq API (Llama 3.3 70B)                    │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-        │
-        ▼
-User sees: "Based on the data, all products have
-           100% adoption. However, some may need
-           attention to improve stickiness..."
+```mermaid
+sequenceDiagram
+    actor U as 👤 User
+    participant C as 💬 Chat UI
+    participant S as ⚡ Server
+    participant DB as 💾 Database
+    participant AI as 🤖 AI Model
+
+    U->>C: 💭 "Which product has highest risk?"
+    activate C
+
+    C->>S: POST /api/chat
+    activate S
+
+    S->>DB: 📊 Fetch Product Data
+    DB->>S: Product Metrics
+
+    S->>S: 🔨 Build AI Prompt
+    Note over S: System + Context + Question
+
+    S->>AI: 📤 Send Prompt
+    activate AI
+
+    loop Streaming Response
+        AI-->>S: 🔤 Token
+        S-->>C: 📡 SSE Event
+        C-->>U: 💬 Display Token
+    end
+
+    deactivate AI
+    deactivate S
+    deactivate C
+
+    Note over U,AI: Response Complete ✅
 ```
 
 ---
 
 ## Key Features Explained
 
-### Feature 1: Adoption Score
+### Feature Overview
 
-**What it measures:** How many potential users are actually using the product
-
-```
-                    Users who used the product (MAU)
-Adoption Score = ─────────────────────────────────── × 100
-                      Total potential users
-
-Example:
-- Product: Customer 360 Dashboard
-- Total users in system: 4
-- Users who accessed it: 4
-- Adoption Score: 100%
-```
-
-### Feature 2: Stickiness Score
-
-**What it measures:** How often users come back
-
-```
-                     Daily Active Users (DAU)
-Stickiness Score = ───────────────────────────── × 100
-                    Monthly Active Users (MAU)
-
-Example:
-- DAU: 2 users
-- MAU: 4 users
-- Stickiness: 50% (users come back half the days)
+```mermaid
+mindmap
+  root((🎯 Features))
+    📊 Analytics
+      DAU/WAU/MAU
+      Query Counts
+      Usage Trends
+    🎯 Scoring
+      Adoption Score
+      Stickiness Score
+      Risk Score
+    🤖 AI
+      Natural Language Chat
+      Auto Insights
+      Recommendations
+    📈 Visualization
+      Trend Charts
+      Score Cards
+      Product Tables
 ```
 
-### Feature 3: Abandonment Risk
+### Adoption Score Calculation
 
-**What it measures:** Likelihood that users will stop using the product
+```mermaid
+graph LR
+    A["👥 MAU<br/>Monthly Active Users"] --> C["➗ Divide"]
+    B["👨‍👩‍👧‍👦 Total Users"] --> C
+    C --> D["✖️ × 100"]
+    D --> E["🎯 Adoption Score<br/>0-100%"]
 
-```
-Factors considered:
-├── Declining usage trend         (+risk)
-├── Low stickiness               (+risk)
-├── Decreasing unique users      (+risk)
-└── Fewer queries per user       (+risk)
-
-Risk Levels:
-├── 0-25%:   Healthy (Green)
-├── 25-50%:  Monitor (Yellow)
-└── 50-100%: At Risk (Red)
+    style E fill:#4caf50,color:#fff
 ```
 
-### Feature 4: AI-Powered Chat
+### Stickiness Score Calculation
 
-**What it does:** Answers questions about your data in natural language
+```mermaid
+graph LR
+    A["👤 DAU<br/>Daily Active Users"] --> C["➗ Divide"]
+    B["👥 MAU<br/>Monthly Active Users"] --> C
+    C --> D["✖️ × 100"]
+    D --> E["🔄 Stickiness Score<br/>0-100%"]
 
+    style E fill:#2196f3,color:#fff
 ```
-┌─────────────────────────────────────────────┐
-│ User: Which product has the highest risk?   │
-│                                             │
-│ AI: Based on the current data, all products │
-│     show healthy metrics with 100% adoption │
-│     scores and 0% abandonment risk.         │
-│     Customer 360, Revenue Dashboard, and    │
-│     Sales Pipeline are performing well...   │
-└─────────────────────────────────────────────┘
+
+### Risk Assessment
+
+```mermaid
+graph TD
+    A["📉 Declining Usage"] --> E["⚠️ Risk Score"]
+    B["📉 Low Stickiness"] --> E
+    C["📉 Fewer Users"] --> E
+    D["📉 Short Sessions"] --> E
+
+    E --> F{"Risk Level"}
+    F -->|0-25%| G["✅ Healthy"]
+    F -->|25-50%| H["⚡ Monitor"]
+    F -->|50-100%| I["🚨 At Risk"]
+
+    style G fill:#4caf50,color:#fff
+    style H fill:#ff9800,color:#fff
+    style I fill:#f44336,color:#fff
 ```
 
 ---
 
 ## Technology Stack
 
+```mermaid
+graph TB
+    subgraph Frontend["🖥️ Frontend"]
+        HTML["📄 HTML5"]
+        CSS["🎨 CSS3"]
+        JS["⚡ JavaScript"]
+        Chart["📊 Chart.js"]
+    end
+
+    subgraph Backend["⚙️ Backend"]
+        Python["🐍 Python 3.8+"]
+        FastAPI["⚡ FastAPI"]
+        Pydantic["✅ Pydantic"]
+    end
+
+    subgraph Database["💾 Database"]
+        SQLite["📁 SQLite"]
+        Postgres["🐘 PostgreSQL"]
+    end
+
+    subgraph AI["🤖 AI/ML"]
+        Foundry["🏠 Foundry Local"]
+        Groq["⚡ Groq API"]
+        Chroma["🧠 ChromaDB"]
+    end
+
+    subgraph Deploy["🚀 Deployment"]
+        Vercel["▲ Vercel"]
+        Neon["🐘 Neon"]
+        GroqCloud["⚡ Groq Cloud"]
+    end
+
+    Frontend --> Backend
+    Backend --> Database
+    Backend --> AI
+    Backend --> Deploy
+
+    style Frontend fill:#fff3e0
+    style Backend fill:#e3f2fd
+    style Database fill:#fce4ec
+    style AI fill:#f3e5f5
+    style Deploy fill:#e8f5e9
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    TECHNOLOGY STACK                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  Frontend                                                   │
-│  ├── HTML5          - Page structure                        │
-│  ├── CSS3           - Styling (dark theme)                  │
-│  ├── JavaScript     - Interactivity                         │
-│  └── Chart.js       - Data visualization                    │
-│                                                             │
-│  Backend                                                    │
-│  ├── Python 3.8+    - Programming language                  │
-│  ├── FastAPI        - Web framework                         │
-│  └── Pydantic       - Data validation                       │
-│                                                             │
-│  Database                                                   │
-│  ├── SQLite         - Local database                        │
-│  └── PostgreSQL     - Cloud database (Neon)                 │
-│                                                             │
-│  AI/ML                                                      │
-│  ├── Foundry Local  - Local LLM (Phi-4-mini)               │
-│  ├── Groq API       - Cloud LLM (Llama 3.3 70B)            │
-│  └── ChromaDB       - Vector store (local only)             │
-│                                                             │
-│  Deployment                                                 │
-│  ├── Vercel         - Serverless hosting (free)            │
-│  ├── Neon           - PostgreSQL hosting (free)            │
-│  └── Groq           - AI inference (free)                  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+
+### Tech Stack Summary
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| 🖥️ Frontend | HTML/CSS/JS + Chart.js | User Interface |
+| ⚙️ Backend | Python + FastAPI | API Server |
+| 💾 Database | SQLite / PostgreSQL | Data Storage |
+| 🤖 AI | Foundry / Groq | Intelligence |
+| 🚀 Deploy | Vercel + Neon | Hosting |
+
+---
+
+## How the AI Chat Works
+
+### AI Pipeline
+
+```mermaid
+flowchart LR
+    A["❓ User Question"] --> B["📊 Fetch Data"]
+    B --> C["🔨 Build Prompt"]
+    C --> D["🤖 AI Model"]
+    D --> E["📡 Stream Response"]
+    E --> F["💬 Display Answer"]
+
+    subgraph Context
+        B1["📋 Products"]
+        B2["📈 Metrics"]
+        B3["📝 History"]
+    end
+
+    B --> Context
+    Context --> C
+```
+
+### Prompt Structure
+
+```mermaid
+graph TD
+    subgraph "📝 Prompt Components"
+        A["🎭 System Role<br/>'You are a data analyst...'"]
+        B["📊 Data Context<br/>Product metrics JSON"]
+        C["❓ User Question<br/>'Which product is at risk?'"]
+    end
+
+    A --> D["📤 Combined Prompt"]
+    B --> D
+    C --> D
+    D --> E["🤖 AI Model"]
+    E --> F["💬 Response"]
 ```
 
 ---
 
 ## API Reference
 
-### Quick Reference Card
+### Endpoint Map
 
+```mermaid
+graph LR
+    subgraph "📖 Read Endpoints"
+        A["GET /"] --> A1["📄 Dashboard"]
+        B["GET /api/health"] --> B1["✅ Health Check"]
+        C["GET /api/summary"] --> C1["📊 Statistics"]
+        D["GET /api/products"] --> D1["📋 All Products"]
+        E["GET /api/products/:id"] --> E1["📦 Single Product"]
+    end
+
+    subgraph "✏️ Write Endpoints"
+        F["POST /api/chat"] --> F1["💬 AI Chat"]
+        G["POST /api/insights"] --> G1["💡 AI Insights"]
+        H["POST /api/track"] --> H1["📝 Track Event"]
+    end
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                      API ENDPOINTS                               │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  GET  /                     → Dashboard HTML page               │
-│                                                                 │
-│  GET  /api/health           → Health check                      │
-│       Response: {                                               │
-│         "status": "ok",                                         │
-│         "database": "postgresql",                               │
-│         "ai": "groq"                                            │
-│       }                                                         │
-│                                                                 │
-│  GET  /api/summary          → Platform statistics               │
-│       Response: {                                               │
-│         "total_products": 6,                                    │
-│         "active_users_30d": 4,                                  │
-│         "total_queries_30d": 3183                               │
-│       }                                                         │
-│                                                                 │
-│  GET  /api/products         → All products with scores          │
-│       Response: [{                                              │
-│         "id": 1,                                                │
-│         "name": "Customer 360",                                 │
-│         "adoption_score": 100,                                  │
-│         "abandonment_risk": 0                                   │
-│       }, ...]                                                   │
-│                                                                 │
-│  GET  /api/products/{id}    → Single product details            │
-│                                                                 │
-│  POST /api/chat             → AI chat (streaming)               │
-│       Body: {"message": "your question"}                        │
-│       Response: Server-Sent Events (streaming)                  │
-│                                                                 │
-│  POST /api/insights         → Generate AI insights              │
-│       Response: Server-Sent Events (streaming)                  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+
+### API Response Flow
+
+```mermaid
+sequenceDiagram
+    participant C as 🖥️ Client
+    participant S as ⚡ Server
+    participant D as 💾 Database
+
+    Note over C,D: GET /api/products
+
+    C->>S: 📤 Request
+    S->>D: 🔍 Query
+    D->>S: 📊 Data
+    S->>S: 🔨 Calculate Scores
+    S->>C: 📥 JSON Response
+
+    Note over C,S: Response Example
+    Note right of C: [{<br/>"id": 1,<br/>"name": "Customer 360",<br/>"adoption_score": 100,<br/>"abandonment_risk": 0<br/>}]
 ```
 
 ---
 
 ## Setup Guide
 
-### Option 1: Use the Live Demo (Easiest)
+### Setup Decision Tree
 
-Just visit: **https://data-product-analytics.vercel.app**
+```mermaid
+flowchart TD
+    A["🚀 Start"] --> B{"Just want to try it?"}
+    B -->|Yes| C["🌐 Visit Live Demo<br/>data-product-analytics.vercel.app"]
+    B -->|No| D{"Want to develop locally?"}
+    D -->|Yes| E["🏠 Local Setup"]
+    D -->|No| F["☁️ Deploy to Vercel"]
 
-No setup required!
+    E --> E1["1. Clone Repo"]
+    E1 --> E2["2. pip install"]
+    E2 --> E3["3. Start Foundry"]
+    E3 --> E4["4. python app.py"]
 
-### Option 2: Run Locally
+    F --> F1["1. Get Groq Key"]
+    F1 --> F2["2. Create Neon DB"]
+    F2 --> F3["3. Deploy on Vercel"]
+    F3 --> F4["4. Add Env Vars"]
 
-```
-STEP 1: Get the Code
-────────────────────
-git clone https://github.com/pandeyraunak007/data-product-analytics.git
-cd data-product-analytics
-
-
-STEP 2: Create Virtual Environment
-───────────────────────────────────
-python -m venv venv
-
-# Windows:
-venv\Scripts\activate
-
-# Mac/Linux:
-source venv/bin/activate
-
-
-STEP 3: Install Dependencies
-────────────────────────────
-pip install -r requirements.txt
-
-
-STEP 4: Start Foundry Local (separate terminal)
-───────────────────────────────────────────────
-foundry model run Phi-4-mini-instruct
-
-# Wait for "Model loaded successfully"
-
-
-STEP 5: Start the Application
-─────────────────────────────
-python app.py
-
-# Open: http://localhost:8001
+    style C fill:#4caf50,color:#fff
+    style E4 fill:#2196f3,color:#fff
+    style F4 fill:#9c27b0,color:#fff
 ```
 
-### Option 3: Deploy to Vercel
+### Local Setup Steps
 
+```mermaid
+graph LR
+    A["📥 Clone"] --> B["🐍 Venv"]
+    B --> C["📦 Install"]
+    C --> D["🤖 Start AI"]
+    D --> E["🚀 Run App"]
+    E --> F["✅ Done!"]
+
+    style F fill:#4caf50,color:#fff
 ```
-STEP 1: Get Free Accounts
-─────────────────────────
-☐ Groq API key:    https://console.groq.com/keys
-☐ Neon database:   https://neon.tech
-☐ Vercel account:  https://vercel.com
 
+### Cloud Deployment Steps
 
-STEP 2: Deploy on Vercel
-────────────────────────
-1. Go to vercel.com
-2. Import: github.com/pandeyraunak007/data-product-analytics
-3. Add environment variables:
-   - GROQ_API_KEY = your_groq_key
-   - DATABASE_URL = your_neon_connection_string
-4. Deploy!
+```mermaid
+graph LR
+    A["🔑 Get Keys"] --> B["🐘 Create DB"]
+    B --> C["▲ Deploy"]
+    C --> D["⚙️ Set Vars"]
+    D --> E["✅ Live!"]
 
-
-STEP 3: Done!
-─────────────
-Your app is live at: https://your-app.vercel.app
+    style E fill:#4caf50,color:#fff
 ```
 
 ---
 
 ## Troubleshooting
 
-### Common Issues
+### Issue Decision Tree
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  PROBLEM: AI chat returns errors (local)                        │
-├─────────────────────────────────────────────────────────────────┤
-│  CAUSE: Foundry Local not running                               │
-│  SOLUTION:                                                      │
-│  1. Open a new terminal                                         │
-│  2. Run: foundry model run Phi-4-mini-instruct                 │
-│  3. Wait for "Model loaded successfully"                        │
-│  4. Try the chat again                                          │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["❌ Issue"] --> B{"Where?"}
 
-┌─────────────────────────────────────────────────────────────────┐
-│  PROBLEM: Database errors on Vercel                             │
-├─────────────────────────────────────────────────────────────────┤
-│  CAUSE: Invalid DATABASE_URL                                    │
-│  SOLUTION:                                                      │
-│  1. Check your Neon connection string                           │
-│  2. Make sure it includes ?sslmode=require                     │
-│  3. Redeploy on Vercel                                          │
-└─────────────────────────────────────────────────────────────────┘
+    B -->|Local| C{"What error?"}
+    B -->|Vercel| D{"What error?"}
 
-┌─────────────────────────────────────────────────────────────────┐
-│  PROBLEM: AI not responding on Vercel                           │
-├─────────────────────────────────────────────────────────────────┤
-│  CAUSE: Invalid GROQ_API_KEY                                    │
-│  SOLUTION:                                                      │
-│  1. Get a new key from console.groq.com/keys                   │
-│  2. Update in Vercel environment variables                      │
-│  3. Redeploy                                                    │
-└─────────────────────────────────────────────────────────────────┘
+    C -->|AI not responding| C1["🔧 Start Foundry Local"]
+    C -->|DLL load failed| C2["📦 Install VC++ Redistributable"]
+    C -->|Port in use| C3["🔄 Kill process or change port"]
 
-┌─────────────────────────────────────────────────────────────────┐
-│  PROBLEM: "DLL load failed" on Windows (local)                  │
-├─────────────────────────────────────────────────────────────────┤
-│  CAUSE: Missing Visual C++ Redistributable                      │
-│  SOLUTION:                                                      │
-│  1. Download: https://aka.ms/vs/17/release/vc_redist.x64.exe   │
-│  2. Install it                                                  │
-│  3. Restart the application                                     │
-└─────────────────────────────────────────────────────────────────┘
+    D -->|Database error| D1["🔧 Check DATABASE_URL"]
+    D -->|AI error| D2["🔑 Check GROQ_API_KEY"]
+    D -->|500 Error| D3["📋 Check Vercel Logs"]
+
+    style C1 fill:#4caf50,color:#fff
+    style C2 fill:#4caf50,color:#fff
+    style C3 fill:#4caf50,color:#fff
+    style D1 fill:#4caf50,color:#fff
+    style D2 fill:#4caf50,color:#fff
+    style D3 fill:#4caf50,color:#fff
 ```
 
 ---
 
 ## Summary
 
+```mermaid
+graph LR
+    A["📊 Data"] --> B["🤖 AI"]
+    B --> C["💡 Insights"]
+
+    style A fill:#2196f3,color:#fff
+    style B fill:#9c27b0,color:#fff
+    style C fill:#4caf50,color:#fff
+```
+
 This platform provides:
 
-1. **Visibility** - See how all your data products are being used
-2. **Intelligence** - AI analyzes patterns and provides recommendations
-3. **Flexibility** - Run locally or deploy to cloud for free
-4. **Simplicity** - Clean dashboard, easy setup
+| # | Feature | Description |
+|---|---------|-------------|
+| 1 | 👁️ **Visibility** | See how all your data products are being used |
+| 2 | 🧠 **Intelligence** | AI analyzes patterns and provides recommendations |
+| 3 | 🔄 **Flexibility** | Run locally or deploy to cloud for free |
+| 4 | ✨ **Simplicity** | Clean dashboard, easy setup |
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│     "Turn your data product usage into actionable insights"     │
-│                                                                 │
-│                    📊 → 🤖 → 💡                                 │
-│                                                                 │
-│              Data    AI     Insights                            │
-│                                                                 │
-│     Live Demo: https://data-product-analytics.vercel.app        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
+### Quick Links
+
+```mermaid
+graph LR
+    A["🌐 Live Demo"] --> B["data-product-analytics.vercel.app"]
+    C["📂 Repository"] --> D["github.com/pandeyraunak007/data-product-analytics"]
+
+    click B "https://data-product-analytics.vercel.app"
+    click D "https://github.com/pandeyraunak007/data-product-analytics"
 ```
 
 ---
