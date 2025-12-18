@@ -33,8 +33,8 @@ client = OpenAI(
     base_url="http://127.0.0.1:51122/v1",
     api_key="not-needed"
 )
-# Use GPU model for faster responses (falls back to CPU if GPU unavailable)
-MODEL = "Phi-4-mini-instruct-generic-gpu:5"
+# Use CPU model (GPU model has connection issues on some systems)
+MODEL = "Phi-4-mini-instruct-generic-cpu:5"
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
