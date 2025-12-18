@@ -129,11 +129,11 @@ To modify these, edit the constants in `app.py`.
 
 ## Vercel Deployment
 
-This app supports deployment to Vercel with PostgreSQL and OpenAI.
+This app supports deployment to Vercel with PostgreSQL and Groq (free AI).
 
 ### Prerequisites for Vercel
 
-1. **OpenAI API Key** - Get one from [OpenAI Platform](https://platform.openai.com/)
+1. **Groq API Key (FREE)** - Get one from [Groq Console](https://console.groq.com/keys)
 2. **PostgreSQL Database** - Use one of:
    - [Supabase](https://supabase.com/) (free tier available)
    - [Neon](https://neon.tech/) (free tier available)
@@ -146,7 +146,7 @@ This app supports deployment to Vercel with PostgreSQL and OpenAI.
 2. Go to [Vercel](https://vercel.com/) and import your GitHub repository
 
 3. Add environment variables in Vercel:
-   - `OPENAI_API_KEY` - Your OpenAI API key
+   - `GROQ_API_KEY` - Your Groq API key (free)
    - `DATABASE_URL` - PostgreSQL connection string
 
 4. Deploy!
@@ -155,7 +155,7 @@ This app supports deployment to Vercel with PostgreSQL and OpenAI.
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `OPENAI_API_KEY` | OpenAI API key for AI features | Yes (Vercel) |
+| `GROQ_API_KEY` | Groq API key for AI features (FREE) | Yes (Vercel) |
 | `DATABASE_URL` | PostgreSQL connection string | Yes (Vercel) |
 
 For local development, leave these unset to use SQLite + Foundry Local.

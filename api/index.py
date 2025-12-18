@@ -15,7 +15,7 @@ from openai import OpenAI
 # Detect environment
 IS_VERCEL = os.environ.get("VERCEL", False)
 DATABASE_URL = os.environ.get("DATABASE_URL")
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 
 # Database setup - PostgreSQL for Vercel, SQLite for local
 if DATABASE_URL:
@@ -58,10 +58,13 @@ else:
     DB_TYPE = "sqlite"
 
 # AI Client setup
-if OPENAI_API_KEY:
-    # OpenAI API (Vercel)
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    AI_MODEL = "gpt-3.5-turbo"
+if GROQ_API_KEY:
+    # Groq API (Vercel) - Free tier with fast inference
+    client = OpenAI(
+        base_url="https://api.groq.com/openai/v1",
+        api_key=GROQ_API_KEY
+    )
+    AI_MODEL = "llama-3.3-70b-versatile"  # Free, fast, high quality
 else:
     # Foundry Local (Local development)
     client = OpenAI(
